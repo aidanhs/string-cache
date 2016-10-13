@@ -12,6 +12,8 @@
 #[cfg(feature = "heapsize")]
 use heapsize::HeapSizeOf;
 
+use phf::PhfHash;
+
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use std::ascii::AsciiExt;
@@ -23,7 +25,7 @@ use std::ops;
 use std::ptr;
 use std::slice;
 use std::str;
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Mutex;
 use std::sync::atomic::AtomicIsize;
@@ -487,6 +489,12 @@ impl<K> BaseAtom<K> where K: Kind {
 
     pub fn eq_str_ignore_ascii_case(&self, other: &str) -> bool {
         (&**self).eq_ignore_ascii_case(other)
+    }
+}
+
+impl<K> PhfHash for BaseAtom<K> where K: Kind {
+    fn phf_hash<H>(&self, state: &mut H) where H: Hasher {
+        self.unsafe_data.phf_hash(state)
     }
 }
 
